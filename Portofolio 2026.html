@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Portofolio — Bagas Dwi Prasetyo</title>
+  <style>
+    :root {
+      --fg: #eef0ff;
+      --muted: #a3a9cf;
+      --panel: rgba(14, 16, 34, .88);
+      --line: rgba(255, 255, 255, .18);
+      --a1: #7c5cff;
+      --a2: #00e0c6;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px)
+    }
+
+    @media (prefers-color-scheme:light) {
+      :root:not([data-theme="dark"]) {
+        --fg: #12142b;
+        --muted: #565b82;
+        --panel: rgba(255, 255, 255, .92);
+        --line: rgba(20, 20, 60, .18)
+      }
+    }
+
+    :root[data-theme="light"] {
+      --fg: #12142b;
+      --muted: #565b82;
+      --panel: rgba(255, 255, 255, .92);
+      --line: rgba(20, 20, 60, .18)
+    }
+
+    :root[data-theme="dark"] {
+      --fg: #eef0ff;
+      --muted: #a3a9cf;
+      --panel: rgba(14, 16, 34, .88);
+      --line: rgba(255, 255, 255, .18)
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      background: #0a0b1e;
+      font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+      color: var(--fg);
+      touch-action: none
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block
+    }
+
+    .grad {
+      background: linear-gradient(90deg, var(--a1), var(--a2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent
+    }
+
+    #hud {
+      position: fixed;
+      top: calc(10px + env(safe-area-inset-top, 0px));
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      pointer-events: none;
+      z-index: 5
+    }
+
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: .82rem;
+      backdrop-filter: blur(10px);
+      color: var(--fg)
+    }
+
+    #quest div {
+      opacity: .6;
+      line-height: 1.5
+    }
+
+    #quest div.ok {
+      opacity: 1;
+      color: var(--a2)
+    }
+
+    #score {
+      text-align: right;
+      font-weight: 700
+    }
+
+    #hint {
+      position: fixed;
+      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      font-size: .82rem;
+      color: #fff;
+      background: rgba(0, 0, 0, .45);
+      padding: 6px 14px;
+      border-radius: 99px;
+      pointer-events: none;
+      white-space: nowrap
+    }
+
+    #joy {
+      position: fixed;
+      left: 22px;
+      bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .1);
+      border: 2px solid rgba(255, 255, 255, .3);
+      z-index: 5;
+      display: none
+    }
+
+    #knob {
+      position: absolute;
+      left: 35px;
+      top: 35px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--a1), var(--a2))
+    }
+
+    #act {
+      position: fixed;
+      right: 22px;
+      bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+      z-index: 6;
+      display: none;
+      margin: 0 !important
+    }
+
+    @media (pointer:coarse) {
+      #joy {
+        display: block
+      }
+
+      #hint {
+        display: none
+      }
+    }
+
+    .ov {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(5, 6, 18, .6);
+      backdrop-filter: blur(6px)
+    }
+
+    .ov.h {
+      display: none
+    }
+
+    .card {
+      max-width: 560px;
+      width: 100%;
+      max-height: 82vh;
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 28px;
+      color: var(--fg);
+      touch-action: pan-y
+    }
+
+    .card h1 {
+      font-size: clamp(2rem, 7vw, 3rem);
+      line-height: 1.1;
+      margin-bottom: 12px
+    }
+
+    .card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 12px
+    }
+
+    .card p,
+    .card li {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 8px
+    }
+
+    .card ul {
+      padding-left: 18px
+    }
+
+    .card h3 {
+      margin: 14px 0 4px;
+      font-size: 1.05rem
+    }
+
+    .btn {
+      display: inline-block;
+      margin: 14px 10px 0 0;
+      padding: 12px 22px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--fg);
+      font: 600 .95rem inherit;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none
+    }
+
+    .btn.p {
+      background: linear-gradient(90deg, var(--a1), var(--a2));
+      color: #06070d;
+      border: 0
+    }
+
+    .chips span {
+      display: inline-block;
+      margin: 4px 6px 0 0;
+      padding: 5px 12px;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      font-size: .85rem;
+      color: var(--fg)
+    }
+  </style>
+</head>
+
+<body>
+  <div id="hud">
+    <div class="box" id="quest"></div>
+    <div class="box" id="score">🪙 0 / 20</div>
+  </div>
+  <div id="hint"></div>
+  <button class="btn p" id="act">Buka Info</button>
+  <div id="joy">
+    <div id="knob"></div>
+  </div>
+
+  <div class="ov" id="start">
+    <div class="card">
+      <p style="font-size:.85rem">● Terbuka untuk peluang kerja</p>
+      <h1>Halo, saya <span class="grad">Bagas Dwi Prasetyo</span></h1>
+      <p>Programmer|| Web Developer||Software Developer||IT Support||AI Automation. Pandu sang pahlawan menyusuri jalur
+        berliku, melewati candi dan jembatan: kunjungi 8 stoneElemet dan kumpulkan 20 koin!</p>
+      <button class="btn p" id="play">▶ Mulai Bermain</button><button class="btn" id="plain">Lihat versi biasa</button>
+    </div>
+  </div>
+  <div class="ov h" id="panel">
+    <div class="card">
+      <div id="pc"></div><button class="btn p" id="close">Lanjut bermain</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    (function () {
+      var DATA = {
+        about: {
+          t: '🏠 Tentang Saya',
+          h: '<p>Fullstack Developer & IT Professional yang adaptif dengan spesialisasi dalam merancang, membangun, dan memelihara sistem informasi serta aplikasi web interaktif secara end-to-end (Frontend, Backend, & Database). Berfokus pada performa sistem yang responsif, efisiensi basis data, dan keterandalan aplikasi.</p><ul><li>2+ Tahun Pengalaman Fullstack Developer (1 Tahun di Bazma Technologi Solution & 1 Tahun di Prodigy Digital Solution)</li><li>1 Tahun Pengalaman MAGANG IT di PT Mandom Indonesia Tbk Dan PT NOK INDONESIA (6 Bulan IT Application Support & 6 Bulan Magang IoT Developer)</li><li>S1 Teknik Informatika — Universitas Pelita Bangsa (IPK 3.91 / Pujian)</li></ul>'
+        },
+        p1: { t: '🖥️ Proyek 1', h: '<h3>E-Commerce Dashboard</h3><p>Dashboard analitik real-time; waktu muat turun 40%, dipakai 2.000+ pengguna.</p><div class="chips"><span>React</span><span>TypeScript</span><span>Node.js</span></div>' },
+        p2: { t: '🧊 Proyek 2', h: '<h3>3D Product Configurator</h3><p>Konfigurator produk interaktif; konversi penjualan naik 25%.</p><div class="chips"><span>Three.js</span><span>WebGL</span><span>GSAP</span></div>' },
+        p3: { t: '📅 Proyek 3', h: '<h3>Aplikasi Booking Online</h3><p>Reservasi dengan pembayaran terintegrasi dan notifikasi otomatis.</p><div class="chips"><span>Next.js</span><span>PostgreSQL</span><span>Docker</span></div>' },
+        skills: { t: '💎 Skill & Tools', h: '<div class="chips"><span>JavaScript</span><span>TypeScript</span><span>React</span><span>Next.js</span><span>Three.js</span><span>WebGL</span><span>Tailwind</span><span>Node.js</span><span>Git</span><span>Figma</span><span>REST API</span></div>' },
+        time: { t: '🧭 Career Timeline', h: '<h3>2025 — Sekarang · Frontend Developer, PT Contoh</h3><p>Memimpin pengembangan platform web 3D.</p><h3>2023 — 2025 · Web Developer, Studio Kreatif</h3><p>Membangun 10+ situs interaktif untuk klien.</p><h3>2022 · Lulus S1 Teknik Informatika</h3>' },
+        blog: { t: '📝 Blog & Insights', h: '<ul><li>Optimasi Three.js untuk perangkat mobile</li><li>Membangun portofolio interaktif dari nol</li><li>Tips Lighthouse 90+ untuk aplikasi React</li></ul>' },
+        contact: { t: '📮 Kontak & CV', h: '<p>Punya posisi atau proyek menarik? Saya siap berdiskusi.</p><a class="btn p" href="mailto:email@anda.com">email@anda.com</a><a class="btn" href="#">LinkedIn</a><a class="btn" href="#">GitHub</a><a class="btn" href="#">Unduh CV</a>' }
+      };
+      var ST = [{ k: 'about', c: 0x7c5cff }, { k: 'p1', c: 0x00e0c6 }, { k: 'p2', c: 0xff5c8a }, { k: 'p3', c: 0xffb84d }, { k: 'skills', c: 0x5cc8ff }, { k: 'time', c: 0xb06cff }, { k: 'blog', c: 0xff8a5c }, { k: 'contact', c: 0x7dff8a }];
+      ST.forEach(function (s, i) { s.x = i % 2 ? 10 : -10; s.z = -6 - 14 * i });
+      var PT = [[0, 8]].concat(ST.map(function (s) { return [s.x, s.z] }));
+      var RV = [1, 3, 5].map(function (i) { var a = PT[i + 1], b = PT[i + 2], vx = b[0] - a[0], vz = b[1] - a[1], l = Math.hypot(vx, vz); return { x: (a[0] + b[0]) / 2, z: (a[1] + b[1]) / 2, dx: vx / l, dz: vz / l } });
+      var CN = [[24, -8, 1], [-24, -26, 1.2], [24, -42, 1], [-24, -58, 1.3], [24, -74, 1.1], [-24, -90, 1], [0, -120, 1.7]];
+      function dseg(px, pz, a, b) { var vx = b[0] - a[0], vz = b[1] - a[1], t = Math.max(0, Math.min(1, ((px - a[0]) * vx + (pz - a[1]) * vz) / (vx * vx + vz * vz))); return Math.hypot(px - a[0] - vx * t, pz - a[1] - vz * t) }
+      function dpath(x, z) { var m = 99; for (var i = 0; i < PT.length - 1; i++)m = Math.min(m, dseg(x, z, PT[i], PT[i + 1])); return m }
+      function onB(v, x, z) { var rx = x - v.x, rz = z - v.z; return Math.abs(rx * v.dx + rz * v.dz) < 5.6 && Math.abs(-rx * v.dz + rz * v.dx) < 1.5 }
+      function blocked(x, z) { return RV.some(function (v) { return Math.abs(z - v.z) < 2.6 && !onB(v, x, z) }) }
+      function elev(x, z) { return RV.some(function (v) { return onB(v, x, z) }) ? .35 : 0 }
+
+      var $ = function (i) { return document.getElementById(i) };
+      var visited = {}, score = 0, playing = false, open = false, near = null, done = false, K = {}, jx = 0, jz = 0;
+      function quest() { $('quest').innerHTML = '<b>Misi</b>' + ST.map(function (s) { return '<div class="' + (visited[s.k] ? 'ok' : '') + '">' + (visited[s.k] ? '✔ ' : '○ ') + DATA[s.k].t.replace(/^\S+\s/, '') + '</div>' }).join('') }
+      quest();
+      function show(html) { $('pc').innerHTML = html; $('panel').classList.remove('h'); open = true }
+      function openSt(s) {
+        visited[s.k] = 1; quest(); var d = DATA[s.k], extra = '';
+        if (Object.keys(visited).length === ST.length && !done) { done = true; extra = '<p class="grad" style="font-weight:700;margin-top:14px">🎉 Misi selesai! Terima kasih sudah menjelajah — mari ngobrol.</p>' }
+        show('<h2>' + d.t + '</h2>' + d.h + extra)
+      }
+      $('close').onclick = function () { $('panel').classList.add('h'); open = false };
+      $('play').onclick = function () { $('start').classList.add('h'); playing = true };
+      $('act').onclick = function () { if (near && !open) openSt(near) };
+      $('plain').onclick = function () { $('start').classList.add('h'); show(Object.keys(DATA).map(function (k) { return '<h2>' + DATA[k].t + '</h2>' + DATA[k].h }).join('<hr style="border:0;border-top:1px solid var(--line);margin:18px 0">')); playing = true };
+      addEventListener('keydown', function (e) {
+        var k = e.key.toLowerCase(); K[k] = 1;
+        if (k === 'escape') $('close').onclick();
+        if ((k === 'e' || k === 'enter') && near && !open && playing) openSt(near)
+      });
+      addEventListener('keyup', function (e) { K[e.key.toLowerCase()] = 0 });
+      var joy = $('joy'), knob = $('knob');
+      function jm(e) {
+        var t = e.touches ? e.touches[0] : e, r = joy.getBoundingClientRect(), dx = t.clientX - r.left - 60, dy = t.clientY - r.top - 60, l = Math.hypot(dx, dy) || 1, c = Math.min(l, 50);
+        dx = dx / l * c; dy = dy / l * c; knob.style.transform = 'translate(' + dx + 'px,' + dy + 'px)'; jx = dx / 50; jz = dy / 50
+      }
+      function je() { knob.style.transform = ''; jx = jz = 0 }
+      joy.addEventListener('touchstart', jm); joy.addEventListener('touchmove', jm); joy.addEventListener('touchend', je);
+
+      var r; try { r = new THREE.WebGLRenderer({ antialias: true }) } catch (err) { $('start').querySelector('p:last-of-type').textContent = 'WebGL tidak tersedia di perangkat ini.'; return }
+      r.setPixelRatio(Math.min(devicePixelRatio, 2)); document.body.prepend(r.domElement);
+      var sc = new THREE.Scene(); sc.background = new THREE.Color(0x0d0f22); sc.fog = new THREE.Fog(0x0d0f22, 28, 75);
+      var cam = new THREE.PerspectiveCamera(55, 1, .1, 160);
+      var hemi = new THREE.HemisphereLight(0x9a9cff, 0x203040, .9); sc.add(hemi);
+      var sun = new THREE.DirectionalLight(0xffffff, .8); sun.position.set(10, 20, 8); sc.add(sun);
+      function M(c, o) { return new THREE.MeshStandardMaterial(Object.assign({ color: c, flatShading: true, roughness: .7 }, o || {})) }
+      function B(c) { return new THREE.MeshBasicMaterial({ color: c }) }
+      function add(g, m, x, y, z, p) { var o = new THREE.Mesh(g, m); o.position.set(x, y, z); (p || sc).add(o); return o }
+
+      // tanah, jalur zigzag, sungai
+      var ground = add(new THREE.PlaneGeometry(110, 200), M(0x2c363c), 0, 0, -45); ground.rotation.x = -Math.PI / 2;
+      var pathM = M(0x7b8290);
+      function seg(a, b, w, m, y) { var vx = b[0] - a[0], vz = b[1] - a[1], o = add(new THREE.BoxGeometry(w, .06, Math.hypot(vx, vz)), m, (a[0] + b[0]) / 2, y, (a[1] + b[1]) / 2); o.rotation.y = Math.atan2(vx, vz) }
+      for (var i = 0; i < PT.length - 1; i++) { seg(PT[i], PT[i + 1], 2.6, pathM, .03); seg(PT[i], PT[i + 1], .14, B(ST[i].c), .07) }
+      var wat = M(0x2a7fd4, { transparent: true, opacity: .85, emissive: 0x0a3a7a, emissiveIntensity: .5, roughness: .2, flatShading: false });
+      var wood = M(0x8b5a2b), wood2 = M(0x5e3b1c), glow = B(0xffb84d);
+      RV.forEach(function (v) {
+        var w = add(new THREE.PlaneGeometry(90, 5.2), wat, 0, .05, v.z); w.rotation.x = -Math.PI / 2;
+        var b = new THREE.Group(); b.position.set(v.x, 0, v.z); b.rotation.y = Math.atan2(v.dx, v.dz);
+        add(new THREE.BoxGeometry(3, .25, 11), wood, 0, .22, 0, b);
+        [-1, 1].forEach(function (s) {
+          add(new THREE.BoxGeometry(.12, .12, 11), wood2, s * 1.4, .95, 0, b);
+          for (var k = -5; k <= 5; k += 2.5)add(new THREE.BoxGeometry(.18, 1, .18), wood2, s * 1.4, .6, k, b);
+          add(new THREE.SphereGeometry(.16, 8, 6), glow, s * 1.4, 1.25, 5.5, b); add(new THREE.SphereGeometry(.16, 8, 6), glow, s * 1.4, 1.25, -5.5, b)
+        });
+        sc.add(b)
+      });
+
+      // bintang
+      var sp = new Float32Array(600 * 3); for (i = 0; i < 600; i++) { var a = Math.random() * 6.28, d = 50 + Math.random() * 30; sp[i * 3] = Math.cos(a) * d; sp[i * 3 + 1] = Math.random() * 40 + 8; sp[i * 3 + 2] = Math.sin(a) * d }
+      var sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp, 3));
+      var stars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: .25, fog: false })); stars.frustumCulled = false; sc.add(stars);
+      // petir
+      var bg = new THREE.BufferGeometry(), bp = new Float32Array(24); bg.setAttribute('position', new THREE.BufferAttribute(bp, 3));
+      var bolt = new THREE.Line(bg, new THREE.LineBasicMaterial({ color: 0xd6ecff, fog: false })); bolt.frustumCulled = false; bolt.visible = false; sc.add(bolt);
+      function strike() { var bx = cam.position.x + (Math.random() - .5) * 50, bz = cam.position.z - 45; for (var i = 0; i < 8; i++) { bp[i * 3] = bx + (Math.random() - .5) * 5; bp[i * 3 + 1] = 38 - i * 4.5; bp[i * 3 + 2] = bz } bg.attributes.position.needsUpdate = true }
+
+      // candi
+      var stone = M(0x8b909c), dark = M(0x5d626e);
+      function candi(x, z, s) {
+        var g = new THREE.Group(), y = 0;
+        [[7, 1], [5.8, 1], [4.6, 1.1]].forEach(function (d, i) { add(new THREE.BoxGeometry(d[0], d[1], d[0]), i % 2 ? dark : stone, 0, y + d[1] / 2, 0, g); y += d[1] });
+        for (var j = 0; j < 3; j++) { var h = .33 * (3 - j); add(new THREE.BoxGeometry(2, h, .9), stone, 0, h / 2, 3.95 + j * .9, g) }
+        add(new THREE.BoxGeometry(1.1, 1.5, .3), glow, 0, y + .75, 1.45, g);
+        [[2.8, 1.4], [2.2, 1.2], [1.6, 1]].forEach(function (d, i) { add(new THREE.BoxGeometry(d[0], d[1], d[0]), i % 2 ? dark : stone, 0, y + d[1] / 2, 0, g); y += d[1] });
+        add(new THREE.ConeGeometry(.95, 2.4, 8), stone, 0, y + 1.2, 0, g); add(new THREE.SphereGeometry(.2, 8, 6), M(0xe0a93a), 0, y + 2.6, 0, g);
+        g.position.set(x, 0, z); g.scale.setScalar(s); g.rotation.y = -Math.sign(x) * Math.PI / 2; sc.add(g)
+      }
+      CN.forEach(function (c) { candi(c[0], c[1], c[2]) });
+
+      // pohon
+      var tg = { t: new THREE.CylinderGeometry(.2, .3, 1.2, 6), c: new THREE.ConeGeometry(1.1, 2.8, 6), b: new THREE.IcosahedronGeometry(1.3, 0) };
+      var tm = M(0x6b4a2f), gm = [M(0x2f8f6a), M(0x3aa87a), M(0x4b8a3a)];
+      for (var n = 0, tr = 0; n < 110 && tr < 900; tr++) {
+        var x = (Math.random() - .5) * 64, z = 20 - Math.random() * 145;
+        if (dpath(x, z) < 5 || CN.some(function (c) { return Math.hypot(x - c[0], z - c[1]) < 8 }) || RV.some(function (v) { return Math.abs(z - v.z) < 4 })) continue;
+        var g = new THREE.Group(), m = gm[n % 3]; add(tg.t, tm, 0, .6, 0, g);
+        if (n % 2) { add(tg.c, m, 0, 2.3, 0, g); var c2 = add(tg.c, m, 0, 3.4, 0, g); c2.scale.setScalar(.7) } else { var bl = add(tg.b, m, 0, 2.3, 0, g); bl.scale.y = .9 }
+        g.position.set(x, 0, z); g.scale.setScalar(.8 + Math.random() * .9); sc.add(g); n++
+      }
+
+      // label
+      function label(txt, c) {
+        var cv = document.createElement('canvas'); cv.width = 512; cv.height = 128; var x = cv.getContext('2d'); x.font = 'bold 60px Segoe UI,Arial,sans-serif'; x.textAlign = 'center'; x.fillStyle = '#' + ('000000' + c.toString(16)).slice(-6); x.shadowColor = '#000'; x.shadowBlur = 8; x.fillText(txt, 256, 84);
+        var s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), transparent: true })); s.scale.set(6, 1.5, 1); return s
+      }
+      // stasiun
+      var GEO = [function () { return new THREE.BoxGeometry(1.5, 1.5, 1.5) }, function () { return new THREE.OctahedronGeometry(1.1) }, function () { return new THREE.ConeGeometry(1, 2, 5) }, function () { return new THREE.DodecahedronGeometry(1) }, function () { return new THREE.TorusKnotGeometry(.7, .25, 48, 8) }, function () { return new THREE.IcosahedronGeometry(1) }, function () { return new THREE.CylinderGeometry(.8, .8, 1.6, 8) }, function () { return new THREE.SphereGeometry(1, 12, 10) }];
+      var rings = [], spin = [];
+      ST.forEach(function (s, i) {
+        var g = new THREE.Group(); g.position.set(s.x, 0, s.z);
+        var ring = add(new THREE.TorusGeometry(3.2, .12, 8, 40), B(s.c), 0, .1, 0, g); ring.rotation.x = Math.PI / 2; rings.push(ring);
+        add(new THREE.CylinderGeometry(3.1, 3.1, .15, 40), M(s.c, { transparent: true, opacity: .25 }), 0, .08, 0, g);
+        add(new THREE.CylinderGeometry(.9, 1.1, .9, 8), M(0xe0a93a, { metalness: .5 }), 0, .5, 0, g);
+        var o = add(GEO[i](), M(s.c, { emissive: s.c, emissiveIntensity: .7 }), 0, 2.4, 0, g); spin.push(o);
+        var lb = label(DATA[s.k].t.replace(/^\S+\s/, ''), s.c); lb.position.y = 5; g.add(lb); sc.add(g)
+      });
+      // koin
+      var coins = []; for (i = 0; i < 20; i++) {
+        var p = Math.floor(Math.random() * (PT.length - 1)), t = Math.random(), A = PT[p], Bp = PT[p + 1], cx = A[0] + (Bp[0] - A[0]) * t + (Math.random() - .5) * 5, cz = A[1] + (Bp[1] - A[1]) * t + (Math.random() - .5) * 5;
+        if (RV.some(function (v) { return Math.abs(cz - v.z) < 4 }) || Math.hypot(cx - ST[Math.min(p, 7)].x, cz - ST[Math.min(p, 7)].z) < 3) { i--; continue }
+        var c = add(new THREE.CylinderGeometry(.4, .4, .1, 16), M(0xffd54a, { emissive: 0xffa000, emissiveIntensity: .6, metalness: .6 }), cx, .8, cz); c.rotation.x = Math.PI / 2; coins.push(c)
+      }
+
+      // pahlawan
+      var P = new THREE.Group(), H = new THREE.Group(); H.scale.setScalar(1.05); P.add(H);
+      var mS = M(0xc98a5a), mT = M(0x14806f), mG = M(0xe0a93a, { metalness: .5, roughness: .4 }), mC = B(0x7fe9ff), mN = M(0x1a2a6c);
+      function hm(g, m, x, y, z, p) { return add(g, m, x, y, z, p || H) }
+      var legs = [-1, 1].map(function (s) {
+        var l = new THREE.Group(); l.position.set(s * .22, 1.05, 0); H.add(l);
+        hm(new THREE.CylinderGeometry(.2, .17, .95, 8), mT, 0, -.5, 0, l); hm(new THREE.CylinderGeometry(.22, .22, .12, 8), mG, 0, -.78, 0, l); hm(new THREE.SphereGeometry(.2, 8, 6), mS, 0, -1, .06, l); return l
+      });
+      hm(new THREE.CylinderGeometry(.5, .68, .55, 10), M(0x8a2f4a), 0, 1.15, 0); hm(new THREE.CylinderGeometry(.69, .69, .08, 10), mG, 0, .9, 0);
+      hm(new THREE.CylinderGeometry(.55, .4, .95, 10), mT, 0, 1.85, 0);
+      var bt = hm(new THREE.TorusGeometry(.46, .07, 6, 14), mG, 0, 1.42, 0); bt.rotation.x = Math.PI / 2;
+      hm(new THREE.SphereGeometry(.1, 8, 6), mC, 0, 1.42, .47); hm(new THREE.OctahedronGeometry(.13), mG, 0, 1.95, .5);
+      var cl = hm(new THREE.TorusGeometry(.4, .07, 6, 14), mG, 0, 2.32, 0); cl.rotation.x = Math.PI / 2;
+      var arms = [-1, 1].map(function (s) {
+        var a = new THREE.Group(); a.position.set(s * .68, 2.2, 0); H.add(a);
+        hm(new THREE.SphereGeometry(.3, 8, 6), mG, 0, 0, 0, a); hm(new THREE.CylinderGeometry(.14, .12, .85, 8), mS, 0, -.42, 0, a); hm(new THREE.CylinderGeometry(.17, .17, .28, 8), mG, 0, -.62, 0, a); hm(new THREE.SphereGeometry(.16, 8, 6), mS, 0, -.9, 0, a); return a
+      });
+      var mace = new THREE.Group(); mace.position.set(0, -.9, .05); mace.rotation.x = .8; arms[1].add(mace);
+      hm(new THREE.CylinderGeometry(.05, .05, 1.5, 6), mG, 0, .4, 0, mace); hm(new THREE.SphereGeometry(.34, 10, 8), M(0x14806f, { emissive: 0x35d8ff, emissiveIntensity: .5 }), 0, 1.3, 0, mace);
+      var mr = hm(new THREE.TorusGeometry(.35, .05, 6, 14), mG, 0, 1.3, 0, mace); mr.rotation.x = Math.PI / 2; hm(new THREE.ConeGeometry(.1, .3, 6), mG, 0, 1.8, 0, mace);
+      hm(new THREE.SphereGeometry(.38, 12, 10), M(0x141a3a), 0, 2.75, -.1); hm(new THREE.SphereGeometry(.36, 12, 10), mS, 0, 2.72, 0);
+      [-1, 1].forEach(function (s) { hm(new THREE.SphereGeometry(.05, 8, 6), mC, s * .13, 2.75, .32) });
+      hm(new THREE.CylinderGeometry(.38, .38, .16, 10), mG, 0, 2.98, 0); hm(new THREE.ConeGeometry(.34, .95, 8), mG, 0, 3.5, 0);
+      var pl = hm(new THREE.ConeGeometry(.2, .9, 5), mN, 0, 3.45, -.3); pl.rotation.x = -.4; hm(new THREE.SphereGeometry(.07, 8, 6), mC, 0, 3, .38);
+      var cape = hm(new THREE.BoxGeometry(1.1, 1.5, .06), M(0x3b2a7a), 0, 1.9, -.5); cape.rotation.x = .15;
+      hm(new THREE.SphereGeometry(1.6, 16, 12), new THREE.MeshBasicMaterial({ color: 0x35d8ff, transparent: true, opacity: .1, depthWrite: false, blending: THREE.AdditiveBlending }), 0, 1.8, 0);
+      var hl = new THREE.PointLight(0x55e0ff, 1.2, 10); hl.position.y = 2; H.add(hl);
+      var runes = [0, 1, 2, 3, 4].map(function () { return hm(new THREE.OctahedronGeometry(.1), mC, 0, 1.8, 0) });
+      var sk = [0, 1, 2].map(function () { var g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(15), 3)); var l = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0x9ff0ff })); l.frustumCulled = false; H.add(l); return l });
+      function spark() { sk.forEach(function (l) { var p = l.geometry.attributes.position.array, a = Math.random() * 6.28, y = 1 + Math.random() * 2; for (var i = 0; i < 5; i++) { var q = .7 + i * .25 + Math.random() * .3; p[i * 3] = Math.cos(a + i * .1) * q; p[i * 3 + 1] = y + (Math.random() - .5) * .6; p[i * 3 + 2] = Math.sin(a + i * .1) * q } l.geometry.attributes.position.needsUpdate = true }) }
+      var sh = add(new THREE.CircleGeometry(.8, 16), new THREE.MeshBasicMaterial({ color: 0, transparent: true, opacity: .4 }), 0, .06, 0, P); sh.rotation.x = -Math.PI / 2;
+      P.position.set(0, 0, 8); sc.add(P);
+
+      function size() { r.setSize(innerWidth, innerHeight, false); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix() }
+      size(); addEventListener('resize', size);
+      var clock = new THREE.Clock(), ang = 0, ph = 0, nf = 3, fl = 0, ns = 0, hint = $('hint'), act = $('act');
+      cam.position.set(0, 9, 19);
+      function loop() {
+        var dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+        var dx = (K.d || K.arrowright ? 1 : 0) - (K.a || K.arrowleft ? 1 : 0) + jx, dz = (K.s || K.arrowdown ? 1 : 0) - (K.w || K.arrowup ? 1 : 0) + jz, l = Math.hypot(dx, dz), mv = playing && !open && l > .05;
+        if (mv) {
+          if (l > 1) { dx /= l; dz /= l } var v = 7 * dt, nx = P.position.x + dx * v, nz = P.position.z + dz * v;
+          if (!blocked(nx, P.position.z)) P.position.x = nx; if (!blocked(P.position.x, nz)) P.position.z = nz;
+          P.position.x = Math.max(-30, Math.min(30, P.position.x)); P.position.z = Math.max(-122, Math.min(20, P.position.z));
+          ang = Math.atan2(dx, dz); P.rotation.y += Math.atan2(Math.sin(ang - P.rotation.y), Math.cos(ang - P.rotation.y)) * .25
+        }
+        P.position.y += (elev(P.position.x, P.position.z) - P.position.y) * .25;
+        ph += dt * (mv ? 10 : 2); var sw = mv ? Math.sin(ph) : 0;
+        legs[0].rotation.x = sw * .7; legs[1].rotation.x = -sw * .7; arms[0].rotation.x = -sw * .5; arms[1].rotation.x = -.4 + sw * .3;
+        H.position.y = .25 + Math.sin(t * 3) * .08;
+        runes.forEach(function (q, i) { var a = t * 1.5 + i * 1.256; q.position.set(Math.cos(a) * 1.6, 1.8 + Math.sin(t * 2 + i) * .6, Math.sin(a) * 1.6); q.rotation.y = t * 3 });
+        if (t > ns) { spark(); ns = t + .09 }
+        var was = near; near = null; ST.forEach(function (s) { if (Math.hypot(P.position.x - s.x, P.position.z - s.z) < 3.2) near = s });
+        if (near && near !== was && !open && playing && !visited[near.k]) openSt(near);
+        hint.textContent = near && !open ? 'Tekan E untuk membuka ' + DATA[near.k].t : 'WASD / Panah = jalan • E = buka info • Esc = tutup';
+        act.style.display = near && !open && playing ? 'block' : 'none';
+        coins.forEach(function (c, i) {
+          if (!c.visible) return; c.rotation.z += dt * 3; c.position.y = .8 + Math.sin(t * 2 + i) * .15;
+          if (Math.hypot(P.position.x - c.position.x, P.position.z - c.position.z) < 1) { c.visible = false; score++; $('score').textContent = '🪙 ' + score + ' / 20' }
+        });
+        rings.forEach(function (g, i) { g.scale.setScalar(1 + Math.sin(t * 2 + i) * .04) });
+        spin.forEach(function (m) { m.rotation.y = t; m.position.y = 2.4 + Math.sin(t * 2) * .2 });
+        wat.emissiveIntensity = .5 + Math.sin(t * 2) * .15;
+        if (t > nf) { fl = 1; nf = t + 5 + Math.random() * 7; strike() }
+        fl *= .92; bolt.visible = fl > .4; hemi.intensity = .9 + fl * 2; sc.background.setRGB(.05 + fl * .3, .06 + fl * .3, .13 + fl * .4); sc.fog.color.copy(sc.background);
+        cam.position.x += (P.position.x - cam.position.x) * .06; cam.position.z += (P.position.z + 11 - cam.position.z) * .06; cam.position.y = 9;
+        cam.lookAt(P.position.x, 1, P.position.z); stars.position.set(cam.position.x, 0, cam.position.z);
+        r.render(sc, cam); requestAnimationFrame(loop)
+      }
+      loop();
+    })();
+  </script>
+</body>
+
+</html>
